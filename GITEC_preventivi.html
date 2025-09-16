@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gitec - Calcolo Preventivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Grigio scuro per lo sfondo */
+        }
+        /* Stili per browser che nascondono le frecce degli input numerici */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        .tab-active {
+            background-color: #ef4444; /* Rosso Gitec */
+            color: white;
+        }
+        .tab-inactive {
+            background-color: #374151; /* Grigio per tab inattivi */
+            color: #d1d5db;
+        }
+        .custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <!-- Intestazione con logo e titolo -->
+        <header class="text-center mb-8">
+            <img src="https://i.imgur.com/WiYgK0b.jpeg" alt="Logo Gitec" class="mx-auto mb-4 h-16 w-auto">
+            <h1 class="text-3xl md:text-4xl font-bold text-red-500">Calcolatore Preventivi</h1>
+            <p class="text-gray-400 mt-2">Inserisci i dati per calcolare il costo totale del lavoro.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Colonna sinistra per i calcoli -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Sezione: Generali -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">1. Dati Generali</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="customer_name" class="block text-sm font-medium text-gray-300">Nome Cliente</label>
+                            <input type="text" id="customer_name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-white p-2">
+                        </div>
+                        <div>
+                            <label for="date" class="block text-sm font-medium text-gray-300">Data</label>
+                            <input type="date" id="date" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-white p-2">
+                        </div>
+                        <div>
+                            <label for="time" class="block text-sm font-medium text-gray-300">Ora</label>
+                            <input type="time" id="time" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-white p-2">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sezione: Materiali -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">2. Costo Materiali</h2>
+                    <!-- Tab per selezione materiale -->
+                    <div class="flex space-x-2 mb-4 rounded-lg p-1 bg-gray-900">
+                        <button id="tab-acciaio" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-300 tab-active">Acciaio</button>
+                        <button id="tab-ferro" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-300 tab-inactive">Ferro</button>
+                        <button id="tab-alluminio" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-300 tab-inactive">Alluminio</button>
+                    </div>
+
+                    <!-- Calcolatore Acciaio -->
+                    <div id="calculator-acciaio" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Prezzo Predefinito/kg</label>
+                                <select id="acciaio-prezzo-select" class="bg-gray-700 p-2 rounded-md custom-select text-sm w-full">
+                                    <option value="">Nessuno</option>
+                                    <option value="1.80">Costruzione (~€1.80)</option>
+                                    <option value="2.50">Inox 304 (~€2.50)</option>
+                                    <option value="3.20">Inox 316 (~€3.20)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Prezzo Manuale/kg (€)</label>
+                                <input type="number" id="acciaio-prezzo" placeholder="Prezzo manuale" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end pt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Lungh. (mm)</label>
+                                <input type="number" id="acciaio-lunghezza" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Largh. (mm)</label>
+                                <input type="number" id="acciaio-larghezza" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Spess. (mm)</label>
+                                <input type="number" id="acciaio-spessore" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">P. Specifico</label>
+                                <input type="number" id="acciaio-peso-specifico" value="7.85" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Quantità</label>
+                                <input type="number" id="acciaio-quantita" value="1" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg text-center grid grid-cols-3 gap-2">
+                            <div><span class="text-sm text-gray-400">Volume (cm³)</span><p id="acciaio-volume" class="font-mono text-lg">0.00</p></div>
+                            <div><span class="text-sm text-gray-400">Peso (kg)</span><p id="acciaio-peso" class="font-mono text-lg">0.00</p></div>
+                            <div><span class="text-sm text-gray-400">Costo (€)</span><p id="acciaio-costo" class="font-mono text-lg font-bold text-red-500">0.00</p></div>
+                        </div>
+                    </div>
+                    <!-- Calcolatore Ferro -->
+                    <div id="calculator-ferro" class="space-y-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Prezzo Predefinito/kg</label>
+                                <select id="ferro-prezzo-select" class="bg-gray-700 p-2 rounded-md custom-select text-sm w-full">
+                                    <option value="">Nessuno</option>
+                                    <option value="1.50">Comune (~€1.50)</option>
+                                    <option value="2.20">C45 (~€2.20)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Prezzo Manuale/kg (€)</label>
+                                <input type="number" id="ferro-prezzo" placeholder="Prezzo manuale" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                        </div>
+                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end pt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Lungh. (mm)</label>
+                                <input type="number" id="ferro-lunghezza" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Largh. (mm)</label>
+                                <input type="number" id="ferro-larghezza" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Spess. (mm)</label>
+                                <input type="number" id="ferro-spessore" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">P. Specifico</label>
+                                <input type="number" id="ferro-peso-specifico" value="7.87" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Quantità</label>
+                                <input type="number" id="ferro-quantita" value="1" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg text-center grid grid-cols-3 gap-2">
+                            <div><span class="text-sm text-gray-400">Volume (cm³)</span><p id="ferro-volume" class="font-mono text-lg">0.00</p></div>
+                            <div><span class="text-sm text-gray-400">Peso (kg)</span><p id="ferro-peso" class="font-mono text-lg">0.00</p></div>
+                            <div><span class="text-sm text-gray-400">Costo (€)</span><p id="ferro-costo" class="font-mono text-lg font-bold text-red-500">0.00</p></div>
+                        </div>
+                    </div>
+                    <!-- Calcolatore Alluminio -->
+                    <div id="calculator-alluminio" class="space-y-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Prezzo Predefinito/kg</label>
+                                <select id="alluminio-prezzo-select" class="bg-gray-700 p-2 rounded-md custom-select text-sm w-full">
+                                    <option value="">Nessuno</option>
+                                    <option value="2.70">Serie 1000 (~€2.70)</option>
+                                    <option value="3.50">Anticorodal (~€3.50)</option>
+                                    <option value="4.50">Ergal (~€4.50)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Prezzo Manuale/kg (€)</label>
+                                <input type="number" id="alluminio-prezzo" placeholder="Prezzo manuale" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                        </div>
+                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end pt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Lungh. (mm)</label>
+                                <input type="number" id="alluminio-lunghezza" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Largh. (mm)</label>
+                                <input type="number" id="alluminio-larghezza" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Spess. (mm)</label>
+                                <input type="number" id="alluminio-spessore" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">P. Specifico</label>
+                                <input type="number" id="alluminio-peso-specifico" value="2.70" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Quantità</label>
+                                <input type="number" id="alluminio-quantita" value="1" class="bg-gray-700 p-2 rounded-md w-full">
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg text-center grid grid-cols-3 gap-2">
+                           <div><span class="text-sm text-gray-400">Volume (cm³)</span><p id="alluminio-volume" class="font-mono text-lg">0.00</p></div>
+                            <div><span class="text-sm text-gray-400">Peso (kg)</span><p id="alluminio-peso" class="font-mono text-lg">0.00</p></div>
+                            <div><span class="text-sm text-gray-400">Costo (€)</span><p id="alluminio-costo" class="font-mono text-lg font-bold text-red-500">0.00</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sezione: Laser -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">3. Costo Taglio Laser</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="number" id="laser-tempo" placeholder="Tempo di taglio (min)" class="bg-gray-700 p-2 rounded-md">
+                        <input type="number" id="laser-consumo-energia" placeholder="Consumo energia (kW/h)" class="bg-gray-700 p-2 rounded-md">
+                        <input type="number" id="laser-costo-energia" placeholder="Costo energia (€/kW)" class="bg-gray-700 p-2 rounded-md">
+                        <div></div> <!-- Spazio vuoto per allineamento -->
+                        <input type="number" id="laser-consumo-gas" placeholder="Consumo gas (es. L/min)" class="bg-gray-700 p-2 rounded-md">
+                        <input type="number" id="laser-costo-gas" placeholder="Costo gas (€/L)" class="bg-gray-700 p-2 rounded-md">
+                    </div>
+                </div>
+                
+                <!-- Sezione: Manodopera -->
+                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">4. Costo Manodopera</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="number" id="manodopera-operatori" value="1" placeholder="N° Operatori" class="bg-gray-700 p-2 rounded-md">
+                        <input type="number" id="manodopera-prezzo-orario" placeholder="Prezzo orario/op. (€)" class="bg-gray-700 p-2 rounded-md">
+                        <input type="number" id="manodopera-tempo" placeholder="Tempo (ore)" class="bg-gray-700 p-2 rounded-md">
+                    </div>
+                </div>
+
+                <!-- Sezione: Consegna -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">5. Costo Consegna</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <input type="number" id="consegna-distanza" placeholder="Distanza (km)" class="bg-gray-700 p-2 rounded-md">
+                         <input type="number" id="consegna-costo-km" placeholder="Costo trasporto (€/km)" class="bg-gray-700 p-2 rounded-md">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonna destra per il riepilogo -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg sticky top-8">
+                    <h2 class="text-2xl font-bold text-center mb-4">Riepilogo Preventivo</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center bg-gray-700 p-3 rounded-md">
+                            <span class="text-gray-300">Costo Materiali</span>
+                            <span id="summary-materiali" class="font-mono text-lg">€ 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-gray-700 p-3 rounded-md">
+                            <span class="text-gray-300">Costo Energia</span>
+                            <span id="summary-energia" class="font-mono text-lg">€ 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-gray-700 p-3 rounded-md">
+                            <span class="text-gray-300">Costo Gas</span>
+                            <span id="summary-gas" class="font-mono text-lg">€ 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-gray-700 p-3 rounded-md">
+                            <span class="text-gray-300">Costo Manodopera</span>
+                            <span id="summary-manodopera" class="font-mono text-lg">€ 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-gray-700 p-3 rounded-md">
+                            <span class="text-gray-300">Costo Consegna</span>
+                            <span id="summary-consegna" class="font-mono text-lg">€ 0.00</span>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t-2 border-dashed border-gray-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-semibold">COSTO TOTALE</span>
+                            <span id="summary-totale" class="text-3xl font-bold text-red-500">€ 0.00</span>
+                        </div>
+                    </div>
+                     <button id="reset-button" class="w-full mt-6 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                        Azzera Campi
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let activeMaterial = 'acciaio';
+
+            const inputs = document.querySelectorAll('input, select');
+            const tabs = {
+                acciaio: document.getElementById('tab-acciaio'),
+                ferro: document.getElementById('tab-ferro'),
+                alluminio: document.getElementById('tab-alluminio'),
+            };
+            const calculators = {
+                acciaio: document.getElementById('calculator-acciaio'),
+                ferro: document.getElementById('calculator-ferro'),
+                alluminio: document.getElementById('calculator-alluminio'),
+            };
+
+            const formatCurrency = (value) => `€ ${isNaN(value) ? '0.00' : value.toFixed(2)}`;
+            const getValue = (id) => parseFloat(document.getElementById(id).value) || 0;
+            const setText = (id, text) => document.getElementById(id).textContent = text;
+            
+            function calculateMaterial() {
+                const prezzoManuale = getValue(`${activeMaterial}-prezzo`);
+                const prezzoSelezionato = document.getElementById(`${activeMaterial}-prezzo-select`).value;
+                const p = prezzoManuale || parseFloat(prezzoSelezionato) || 0;
+
+                const l = getValue(`${activeMaterial}-lunghezza`);
+                const w = getValue(`${activeMaterial}-larghezza`);
+                const t = getValue(`${activeMaterial}-spessore`);
+                const ps = getValue(`${activeMaterial}-peso-specifico`);
+                const q = getValue(`${activeMaterial}-quantita`);
+
+                const volumeCm3 = (l * w * t) / 1000;
+                const pesoKg = (volumeCm3 / 1000) * ps * q;
+                const costo = pesoKg * p;
+
+                setText(`${activeMaterial}-volume`, volumeCm3.toFixed(2));
+                setText(`${activeMaterial}-peso`, pesoKg.toFixed(2));
+                setText(`${activeMaterial}-costo`, costo.toFixed(2));
+                
+                return costo;
+            }
+
+            function calculateLaser() {
+                const tempoMin = getValue('laser-tempo');
+                const tempoOre = tempoMin / 60;
+                
+                const consumoEnergia = getValue('laser-consumo-energia');
+                const costoEnergiaKw = getValue('laser-costo-energia');
+                const costoTotaleEnergia = consumoEnergia * costoEnergiaKw * tempoOre;
+
+                const consumoGas = getValue('laser-consumo-gas');
+                const costoGasUnita = getValue('laser-costo-gas');
+                const costoTotaleGas = consumoGas * costoGasUnita * tempoMin;
+                
+                setText('summary-energia', formatCurrency(costoTotaleEnergia));
+                setText('summary-gas', formatCurrency(costoTotaleGas));
+
+                return { energia: costoTotaleEnergia, gas: costoTotaleGas };
+            }
+
+            function calculateManodopera() {
+                const operatori = getValue('manodopera-operatori');
+                const prezzoOrario = getValue('manodopera-prezzo-orario');
+                const tempo = getValue('manodopera-tempo');
+                const costo = operatori * prezzoOrario * tempo;
+                
+                setText('summary-manodopera', formatCurrency(costo));
+                return costo;
+            }
+
+            function calculateConsegna() {
+                const distanza = getValue('consegna-distanza');
+                const costoKm = getValue('consegna-costo-km');
+                const costo = distanza * costoKm;
+
+                setText('summary-consegna', formatCurrency(costo));
+                return costo;
+            }
+
+            function updateTotal() {
+                Object.keys(calculators).forEach(mat => {
+                    if (mat !== activeMaterial) {
+                        setText(`${mat}-costo`, '0.00');
+                    }
+                });
+
+                const costoMateriali = calculateMaterial();
+                const { energia: costoEnergia, gas: costoGas } = calculateLaser();
+                const costoManodopera = calculateManodopera();
+                const costoConsegna = calculateConsegna();
+
+                setText('summary-materiali', formatCurrency(costoMateriali));
+                
+                const totale = costoMateriali + costoEnergia + costoGas + costoManodopera + costoConsegna;
+                setText('summary-totale', formatCurrency(totale));
+            }
+
+            function switchTab(newMaterial) {
+                activeMaterial = newMaterial;
+                
+                for (const mat in tabs) {
+                    tabs[mat].classList.remove('tab-active', 'tab-inactive');
+                    tabs[mat].classList.add(mat === newMaterial ? 'tab-active' : 'tab-inactive');
+                    calculators[mat].classList.add('hidden');
+                }
+                calculators[newMaterial].classList.remove('hidden');
+
+                updateTotal();
+            }
+
+            // Aggiungi eventi ai tab
+            tabs.acciaio.addEventListener('click', () => switchTab('acciaio'));
+            tabs.ferro.addEventListener('click', () => switchTab('ferro'));
+            tabs.alluminio.addEventListener('click', () => switchTab('alluminio'));
+            
+            // Gestione dei selettori di prezzo che si escludono a vicenda
+            ['acciaio', 'ferro', 'alluminio'].forEach(material => {
+                const select = document.getElementById(`${material}-prezzo-select`);
+                const input = document.getElementById(`${material}-prezzo`);
+                
+                select.addEventListener('change', () => {
+                    if (select.value) {
+                       input.value = '';
+                    }
+                });
+
+                input.addEventListener('input', () => {
+                    if (input.value) {
+                       select.value = '';
+                    }
+                });
+            });
+
+            // Aggiungi eventi di input a tutti i campi
+            inputs.forEach(input => {
+                const eventType = input.tagName.toLowerCase() === 'select' ? 'change' : 'input';
+                input.addEventListener(eventType, updateTotal);
+            });
+
+            // Imposta data e ora correnti
+            const now = new Date();
+            document.getElementById('date').value = now.toISOString().substring(0, 10);
+            document.getElementById('time').value = now.toTimeString().substring(0, 5);
+
+            // Resetta tutti i campi
+            document.getElementById('reset-button').addEventListener('click', () => {
+                document.querySelectorAll('input').forEach(input => {
+                    if(input.type !== 'date' && input.type !== 'time' && !input.id.includes('peso-specifico') && !input.id.includes('quantita') && !input.id.includes('operatori')) {
+                       input.value = '';
+                    }
+                });
+                document.querySelectorAll('select').forEach(select => {
+                    select.selectedIndex = 0;
+                });
+                // Ripristina valori di default
+                document.getElementById('acciaio-peso-specifico').value = "7.85";
+                document.getElementById('ferro-peso-specifico').value = "7.87";
+                document.getElementById('alluminio-peso-specifico').value = "2.70";
+                document.getElementById('acciaio-quantita').value = "1";
+                document.getElementById('ferro-quantita').value = "1";
+                document.getElementById('alluminio-quantita').value = "1";
+                document.getElementById('manodopera-operatori').value = "1";
+
+                switchTab('acciaio');
+                updateTotal();
+            });
+
+            // Calcolo iniziale
+            updateTotal();
+        });
+    </script>
+</body>
+</html>
+
+
